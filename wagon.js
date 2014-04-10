@@ -1,27 +1,42 @@
+window.w = window.w || {};
 
-var $ = function() {
+(function(w) {
     var _ids = {};
 
-    function _id (id) {
+    w.id = function id (id) {
         if (!(id in _ids)) {
-            _ids[id] = document.getElementById(id);
+            var el = document.getElementById(id);
+            if (!el) {
+                return el;
+            } else {
+                _ids[id] = el;
+            }
         }
 
         return _ids[id];
-    }
+    };
 
-    function _cl(cl) {
+    w.cl = function cl(cl) {
         return document.getElementsByClassName(cl).toArray();
-    }
+    };
 
-    var _html = document.getElementsByTagName('html')[0];
-    var _body = document.getElementsByTagName('body')[0];
+    w.newDom = function newDom(tagName, properties) {
+        var el = document.createElement(tagName);
+        for (var prop in properties) {
+            el[prop] = properties[prop];
+        }
 
-    function _go (fn) {
+        return el;
+    };
+
+    w.html = document.getElementsByTagName('html')[0];
+    w.body = document.getElementsByTagName('body')[0];
+
+    w.go = function go (fn) {
         window.onload = fn;
-    }
+    };
 
-    function _range(start, stop, step) {
+    w.range = function range(start, stop, step) {
         if (!stop) {
             stop = start;
             start = 0;
@@ -36,18 +51,18 @@ var $ = function() {
         }
 
         return r;
-    }
+    };
 
-    function _rand(start, stop) {
+    w.rand = function rand(start, stop) {
         if (!stop) {
             stop = start;
             start = 0;
         }
 
         return Math.floor(Math.random() * (stop - start) + start);
-    }
+    };
 
-    function _randExclude(start, stop, exclusions) {
+    w.randExclude = function randExclude(start, stop, exclusions) {
         // if there's only one exclusion, make an array of one
         exclusions.numSort();
         var realEx = [];
@@ -57,7 +72,7 @@ var $ = function() {
             }
         });
 
-        var value = _rand(start, stop - realEx.length);
+        var value = w.rand(start, stop - realEx.length);
 
         realEx.forEach(function(x) {
             if (value < x) {
@@ -67,25 +82,24 @@ var $ = function() {
         });
 
         return value;
-    }
+    };
 
-    function _test(message, times, fn) {
+    w.test = function test(message, times, fn) {
         if (times instanceof Function) {
             fn = times;
             times = 1;
         }
 
-        var tests = document.getElementById('bedrock-tests');
+        var tests = w.id('bedrock-tests');
         if (tests === null) {
-            tests = document.createElement('ol');
-            tests.id = 'bedrock-tests';
-            _body.appendChild(tests);
+            tests = w.newDom('ol', { id: 'bedrock-tests' });
+            w.body.append(tests);
         }
 
-        var test = document.createElement('li');
-        var state = document.createElement('span');
+        var test = w.newDom('li');
+        var state = w.newDom('span');
 
-        var pass = $.range(times).all(fn);
+        var pass = w.range(times).all(fn);
         if (pass){
             state.style.color = 'green';
             state.textContent = 'Pass';
@@ -94,27 +108,13 @@ var $ = function() {
             state.textContent = 'FAIL';
         }
 
-        test.appendChild(state);
-        test.appendText(' - ' + message);
-        tests.appendChild(test);
-    }
-
-    return {
-        id: _id,
-        cl: _cl,
-        html: _html,
-        body: _body,
-        go: _go,
-        range: _range,
-        rand: _rand,
-        randExclude: _randExclude,
-        test: _test
+        test.append(state);
+        test.appendText(' : ' + message);
+        tests.append(test);
     };
-}();
+})(window.w);
 
 function MaxQueue(maxSize) {
-    var start = 0;
-
     this.Add = function(item) {
         if (this.length == maxSize)
             this.pop();
@@ -213,6 +213,10 @@ HTMLCollection.extend({
     }
 });
 
+Node.extend({
+    append: Node.prototype.appendChild
+})
+
 HTMLElement.extend ({
     appendText: function(text) {
         this.appendChild(document.createTextNode(text));
@@ -225,5 +229,14 @@ HTMLElement.extend ({
     setText: function(text) {
         this.removeAll();
         this.appendText(text);
+    }
+})
+
+Number.extend ({
+    times: function(f) {
+        var times = this;
+        while (times--) {
+            f();
+        }
     }
 })
