@@ -53,6 +53,10 @@ window.w = window.w || {};
         return r;
     };
 
+    w.pick = function pick(array) {
+        return array[w.rand(array.length)];
+    };
+
     w.rand = function rand(start, stop) {
         if (!stop) {
             stop = start;
@@ -96,10 +100,29 @@ window.w = window.w || {};
             w.body.append(tests);
         }
 
-        var test = w.newDom('li');
+        var testLi = w.newDom('li');
         var state = w.newDom('span');
+        var messageDom = w.newDom('span');
 
-        var pass = w.range(times).all(fn);
+        var pass;
+        try {
+            pass = w.range(times).all(fn);
+            messageDom.appendText(message);
+        }
+        catch (e) {
+            pass = false;
+            console.error(e.stack);
+            var errorDom = w.newDom('span');
+            errorDom.style.color = 'red';
+            errorDom.style.fontWeight = 'bold';
+            errorDom.appendText('[{0}: {1}]'.format(e.name, e.message));
+
+            messageDom.append(errorDom);
+            messageDom.appendText(' ({0})'.format(message));
+        }
+
+        state.style.fontWeight = 'bold';
+
         if (pass){
             state.style.color = 'green';
             state.textContent = 'Pass';
@@ -108,9 +131,10 @@ window.w = window.w || {};
             state.textContent = 'FAIL';
         }
 
-        test.append(state);
-        test.appendText(' : ' + message);
-        tests.append(test);
+        testLi.append(state);
+        testLi.appendText(' : ');
+        testLi.append(messageDom);
+        tests.append(testLi);
     };
 })(window.w);
 
@@ -140,6 +164,9 @@ Object.extend({
         return newObj;
     },
     in: function(arr) {
+        if (arguments.length > 1)
+            arr = Array.prototype.slice.call(arguments);
+
         arr.any(function(item) { return this === item; });
     }
 });

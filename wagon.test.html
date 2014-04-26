@@ -7,18 +7,35 @@
 </body>
 <script src='wagon.js'></script>
 <script>
+    w.test('(5).in([3, 4, 5]) should return true', function() {
+        return (5).in([3, 4, 5]);
+    });
+
+    w.test('(5).in(3, 4, 5) should return true', function() {
+        return (5).in(3, 4, 5);
+    });
+
+    w.test('(2).in(3, 4, 5) should return false', function() {
+        return !(2).in(3, 4, 5);
+    });
+
     w.test('range(0, 2) should return [0, 1]', function() {
         var r = w.range(0, 2);
         return r.length = 2 && r[0] === 0 && r[1] === 1;
     });
+
     w.test('5000 runs of rand(2) should only ever return 0 or 1', 5000, function() {
-        return w.rand(2).in([0, 1]);
+        return w.rand(2).in(0, 1);
     });
 
     w.test('5000 runs of randExclude(1, 11, [-2, 1, 5, 9, 5, 10, 5, 56]) should never yield 1, 5, 9, or 10', 5000, function() {
-
         return w.randExclude(1, 11, [-2, 1, 5, 9, 5, 10, 5, 56])
-            .in([2, 3, 4, 6, 7, 8]);
+            .in(2, 3, 4, 6, 7, 8);
+    });
+
+    w.test('5000 runs of pick(["a", "b", "c", "d"]) should only yield a, b, c, or d', function() {
+        return w.pick(['a', 'b', 'c', 'd'])
+        .in('a', 'b', 'c', 'd');
     });
 </script>
 </html>
